@@ -8,6 +8,11 @@ require 'socket'
 #
 #  s.start!     # everything runs in background threads
 #  s.stop!      # gracefully shutdown the server
+#
+# NOTE: the msg_handler does not need to be a proc/lambda, it just needs to be
+# an object that responds_to?(:call), and accepts a single message object.
+# however, if your msg_handler is simple enough to fit into something as tiny as
+# a proc then more power to you.
 class TinyTCPService
   def initialize(port, msg_handler)
     @port = port
