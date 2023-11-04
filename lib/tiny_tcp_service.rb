@@ -90,7 +90,7 @@ class TinyTCPService
         readable, _, errored = IO.select(@clients, nil, @clients, 1)
         readable&.each do |c|
           begin
-            @msg_handler&.call(c.gets.chomp)
+            c.puts(@msg_handler&.call(c.gets.chomp))
           rescue TinyTCPService::BadClient => e
             _remove_client!(c)
           rescue => e
