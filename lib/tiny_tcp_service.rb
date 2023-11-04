@@ -34,7 +34,7 @@ class TinyTCPService
   end
 
   # h - some object that responds to #call
-  def set_msg_handler!(h)
+  def msg_handler=(h)
     @msg_handler = h
   end
 
