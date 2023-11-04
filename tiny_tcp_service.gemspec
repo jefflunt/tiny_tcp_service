@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = "tiny_tcp_service"
-  s.version     = "1.0.1"
+  s.version     = "1.1.0"
   s.description = "a tiny TCP service with automated client lifecycle"
   s.summary     = "a tiny TCP service with automated client lifecycle"
   s.authors     = ["Jeff Lunt"]

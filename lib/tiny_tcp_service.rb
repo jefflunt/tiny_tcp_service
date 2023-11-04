@@ -9,19 +9,33 @@ require 'socket'
 #  s.start!     # everything runs in background threads
 #  s.stop!      # gracefully shutdown the server
 #
-# NOTE: the msg_handler does not need to be a proc/lambda, it just needs to be
-# an object that responds_to?(:call), and accepts a single message object.
-# however, if your msg_handler is simple enough to fit into something as tiny as
-# a proc then more power to you.
+# TinyTCPService implements a line-based, call and response protocol, where
+# every incoming message must be a newline-terminated ("\n") String, and for
+# every received message the service responds with a newline-terminated String.
+# been set).
+#
+# If you need more complex objects to be sent over the wire, consider something
+# like JSON.
+#
+# NOTE: if you're running a TinyTCPService and a client of your system violates
+# your communication protocol, you should raise an instance of
+# TinyTCPService::BadClient, and the TinyTCPService instance will take care of
+# safely removing the client.
 class TinyTCPService
-  def initialize(port, msg_handler)
+  def initialize(port)
     @port = port
-    @msg_handler = msg_handler
 
     @server = TCPServer.new(port)
     @clients = []
     @running = false
+
+    @msg_handler = nil
     @error_handlers = {}
+  end
+
+  # h - some object that responds to #call
+  def set_msg_handler!(h)
+    @msg_handler = h
   end
 
   # returns true if the server is running
@@ -47,6 +61,11 @@ class TinyTCPService
     @clients.length
   end
 
+  def _remove_client!(c)
+    @clients.delete(c)
+    c.close if c && !c.closed?
+  end
+
   # starts the server
   def start!
     return if running?
@@ -59,7 +78,7 @@ class TinyTCPService
         @clients << @server.accept
       end
 
-      @clients.each{|c| c.close if c && !c.closed? }
+      @clients.each{|c| _remove_client!(c) if c && !c.closed? }
       @server.close
     end
 
@@ -69,9 +88,11 @@ class TinyTCPService
         break unless running?
 
         readable, _, errored = IO.select(@clients, nil, @clients, 1)
-        readable&.each do |client|
+        readable&.each do |c|
           begin
-            @msg_handler.call(client.gets.chomp)
+            @msg_handler&.call(c.gets.chomp)
+          rescue TinyTCPService::BadClient => e
+            _remove_client!(c)
           rescue => e
             handler = @error_handlers[e.class]
 
@@ -79,14 +100,13 @@ class TinyTCPService
               handler.call(e)
             else
               stop!
-              raise e unless handler
+              raise e
             end
           end
         end
 
-        errored&.each do |client|
-          @clients.delete(client)
-          client.close if client && !client.closed?
+        errored&.each do |c|
+          _remove_client!(c)
         end
       end
     end
@@ -97,3 +117,5 @@ class TinyTCPService
     @running = false
   end
 end
+
+class TinyTCPService::BadClient < RuntimeError; end
