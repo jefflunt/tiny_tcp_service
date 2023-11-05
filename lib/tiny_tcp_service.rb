@@ -32,7 +32,7 @@ class TinyTCPService
     @error_handlers = {}
 
     # client accept thread
-    Thread.new do |t|
+    @thread = Thread.new do |t|
       loop do
         break unless running?
         @clients << @server.accept
@@ -51,7 +51,12 @@ class TinyTCPService
         readable&.each do |c|
           begin
             m = c.gets&.chomp
-            c.puts(@msg_handler&.call(m) || 'ok')
+
+            if m.is_a?(String)
+              c.puts(@msg_handler&.call(m))
+            else
+              _remove_client!(c)
+            end
           rescue TinyTCPService::BadClient, Errno::ECONNRESET => e
             _remove_client!(c)
           rescue => e
@@ -71,6 +76,11 @@ class TinyTCPService
         end
       end
     end
+  end
+
+  # join the service Thread if you want to wait until it's closed
+  def join
+    @thread.join
   end
 
   # h - some object that responds to #call

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    tiny_tcp_service (1.3.0)
+    tiny_tcp_service (1.4.0)
 
 GEM
   remote: https://rubygems.org/
@@ -9,6 +9,7 @@ GEM
 
 PLATFORMS
   x86_64-darwin-21
+  x86_64-darwin-22
 
 DEPENDENCIES
   tiny_tcp_service!
