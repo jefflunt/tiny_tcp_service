@@ -1,4 +1,4 @@
-see `lib/tiny_tcp_server.rb`
+see `lib/tiny_tcp_service.rb`
 
 this is a tiny gem, typically a single class or module meant to add a very
 simple and focused capability. because the gem is meant to be tiny forever it is

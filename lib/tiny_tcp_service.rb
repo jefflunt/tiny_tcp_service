@@ -11,10 +11,9 @@ require 'socket'
 # TinyTCPService implements a line-based, call and response protocol, where
 # every incoming message must be a newline-terminated ("\n") String, and for
 # every received message the service responds with a newline-terminated String.
-# been set).
 #
-# If you need more complex objects to be sent over the wire, consider something
-# like JSON.
+# You can use this to send more complex objects, such as minified JSON, so long
+# as your JSON's content doesn't also contain newlines.
 #
 # NOTE: if you're running a TinyTCPService and a client of your system violates
 # your communication protocol, you should raise an instance of
